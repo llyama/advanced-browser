@@ -30,6 +30,31 @@ class AdvancedFields:
 
         # -- Columns -- #
 
+        # Card State
+        def cStateOnData(c, n, t):
+            first = mw.col.db.first(
+                "select queue, type from cards where id = ?", c.id)
+            if first:
+                if first[0] == -1:
+                    return "Suspended"
+                if first[0] == -2 or first[0] == -3:
+                    return "Buried"
+                if first[1] == 0:
+                    return "New"
+                if first[1] == 2:
+                    return "Review"
+                if first[1] == 1 or first[1] == 3:
+                    return "Learning"
+
+        cc = advBrowser.newCustomColumn(
+            type='cState',
+            name='Card State',
+            onData=cStateOnData,
+            onSort=lambda: "(select ((queue * 100) + type) from cards where id = c.id) desc nulls last",
+        )
+        self.customColumns.append(cc)
+        # ------------------------------- #
+
         # First review
         def cFirstOnData(c, n, t):
             first = mw.col.db.scalar(
